@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Button, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, FlatList, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable, TextInput } from 'react-native';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { useState, useEffect } from 'react';
 
@@ -36,11 +36,63 @@ export default function App() {
   );
 }
 
+const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
+
+  const [task, setTask] = useState('');
+  const [date, setDate] = useState('');
+
+  const handleOk = () => {
+    temp_note = { note: task, due: date, done: 0 }
+    //setNote(temp_note)
+    addNote(temp_note)
+    setShowForm(!showForm)
+
+  }
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showForm}
+        onRequestClose={() => {
+
+          setShowForm(!showForm);
+        }}>
+
+        <View style={styles.form}>
+          <Text style={styles.title}>
+            Form here
+          </Text>
+          <TextInput
+            style={styles.input}
+            onChangeText={setTask}
+            value={task}
+            placeholder='Task'
+          />
+          <TextInput
+            style={styles.input}
+            onChangeText={setDate}
+            value={date}
+            placeholder='Due'
+          />
+          <Pressable
+            style={styles.button}
+            onPress={handleOk}>
+            <Text style={styles.textStyle}>Ok</Text>
+          </Pressable>
+        </View>
+      </Modal>
+    </View>
+  )
+}
+
 const Content = () => {
   const db = useSQLiteContext()
   const [notes, setNotes] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [note, setNote] = useState({ id: 0, note: 'Task', due: '2024-12-31', done: 0 });
+  const [note, setNote] = useState({});
 
 
   const getNotes = async () => {
@@ -80,6 +132,9 @@ const Content = () => {
     }
   }
 
+  const handleAdd = () => {
+    setShowForm(!showForm);
+  }
 
   useEffect(() => {
     getNotes();
@@ -103,7 +158,7 @@ const Content = () => {
             <FlatList data={notes} renderItem={({ item }) => (
               <View style={styles.note}>
 
-                <Text style={styles.text}>{item.id} - {item.note} - {item.due} - {item.done === 0 ? 'False' : 'True'}</Text>
+                <Text style={styles.text}> {item.note} - {item.due} - {item.done === 0 ? 'False' : 'True'}</Text>
                 <TouchableOpacity onPress={() => deleteNote(item.id)} style={styles.button} >
                   <Text>Delete</Text>
                 </TouchableOpacity>
@@ -115,8 +170,9 @@ const Content = () => {
 
         )
       }
-      <View style={{ flex: 2 }}>
-        <TouchableOpacity onPress={() => { addNote({ note: 'Buy eggs', due: '2024-08-15', done: 0 }); }} style={styles.button} color='#fff'>
+      {showForm && (<NoteForm showForm={showForm} setShowForm={setShowForm} note={note} setNote={setNote} addNote={addNote} />)}
+      <View style={{ flex: 2, backgroundColor: 'blue' }}>
+        <TouchableOpacity onPress={handleAdd} style={styles.button} color='#fff'>
           <Text>Add</Text>
         </TouchableOpacity>
       </View>
@@ -163,5 +219,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 25,
     width: 100
+  },
+  form: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00ff00'
+
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    width: 120
   }
 });
