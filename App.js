@@ -91,6 +91,27 @@ const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
   );
 };
 
+const NoteItem = ({ item, handleDelete }) => {
+  return (
+    <View style={styles.note}>
+      <Text style={styles.text}>
+        {" "}
+        {item.note} - {item.due} - {item.done === 0 ? "False" : "True"}
+      </Text>
+      <Pressable
+        onPress={() => setNote(item)}
+        style={styles.editbutton}
+      ></Pressable>
+      <TouchableOpacity
+        onPress={() => handleDelete(item.id, "c")}
+        style={styles.button}
+      >
+        <Text>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 const Content = ({ dateToday }) => {
   const db = useSQLiteContext();
 
@@ -108,6 +129,24 @@ const Content = ({ dateToday }) => {
       setNotes(notes);
     } catch (error) {
       console.log("Error fetching data :", error);
+    }
+  };
+
+  const ctnote = (note) => {
+    try {
+      console.log(note);
+      const todayDate = new Date(dateToday).getTime();
+      const noteDate = new Date(note.due).getTime();
+
+      if (todayDate < noteDate) {
+        return 1;
+      } else if (todayDate === noteDate) {
+        return 0;
+      } else {
+        return -1;
+      }
+    } catch (error) {
+      console.log("Error while getting something:", error);
     }
   };
 
@@ -170,24 +209,37 @@ const Content = ({ dateToday }) => {
     }
   };
 
+  const handleDelete = (id, section) => {
+    if (section === "c") {
+      index = cTasks.findIndex((k) => k.id === id);
+      console.log(index);
+      setCTasks([...cTasks.slice(0, index), ...cTasks.slice(index + 1)]);
+    }
+    deleteNote(id);
+  };
+
   const handleAdd = () => {
     setShowForm(!showForm);
   };
 
   useEffect(() => {
     getNotes();
-
-    // addNote({ note: 'Buy eggs', due: '2024-08-15', done: 0 });
-    // deleteAllNotes();
   }, []);
 
   useEffect(() => {
     categorizeNotes();
+    console.log("Notes updated");
   }, [notes]);
+
+  useEffect(() => {}, [cTasks, oTasks, tTasks]);
+
+  useEffect(() => {
+    console.log(note);
+  }, [note]);
 
   return (
     <View style={{ flex: 1 }}>
-      {notes.length === 0 ? (
+      {/* {notes.length === 0 ? (
         <View style={{ flex: 5 }}>
           <Text style={styles.text}>NONE</Text>
         </View>
@@ -195,6 +247,62 @@ const Content = ({ dateToday }) => {
         <View style={{ flex: 5 }}>
           <FlatList
             data={notes}
+            renderItem={({ item }) => {
+              ctnote(item) === 1 ? (
+                <View style={styles.note}>
+                  <Text style={styles.text}>
+                    {" "}
+                    {item.note} - {item.due} -{" "}
+                    {item.done === 0 ? "False" : "True"}
+                  </Text>
+                  <Pressable
+                    onPress={() => setNote(item)}
+                    style={styles.editbutton}
+                  ></Pressable>
+                  <TouchableOpacity
+                    onPress={() => deleteNote(item.id)}
+                    style={styles.button}
+                  >
+                    <Text>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null;
+            }}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        </View>
+      )} */}
+
+      {cTasks.length === 0 ? (
+        <View style={styles.header}>
+          <Text style={styles.text}>Carried Over</Text>
+        </View>
+      ) : (
+        <View style={{ flex: 5 }}>
+          <View style={styles.header}>
+            <Text style={styles.text}>Carried Over</Text>
+          </View>
+          <FlatList
+            data={cTasks}
+            renderItem={({ item }) => (
+              <NoteItem item={item} handleDelete={handleDelete} />
+            )}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        </View>
+      )}
+
+      {/* {tTasks.length === 0 ? (
+        <View style={styles.header}>
+          <Text style={styles.text}>Today's tasks</Text>
+        </View>
+      ) : (
+        <View style={{ flex: 5 }}>
+          <View style={styles.header}>
+            <Text style={styles.text}>Today's tasks</Text>
+          </View>
+          <FlatList
+            data={tTasks}
             renderItem={({ item }) => (
               <View style={styles.note}>
                 <Text style={styles.text}>
@@ -202,6 +310,10 @@ const Content = ({ dateToday }) => {
                   {item.note} - {item.due} -{" "}
                   {item.done === 0 ? "False" : "True"}
                 </Text>
+                <Pressable
+                  onPress={() => setNote(item)}
+                  style={styles.editbutton}
+                ></Pressable>
                 <TouchableOpacity
                   onPress={() => deleteNote(item.id)}
                   style={styles.button}
@@ -214,6 +326,42 @@ const Content = ({ dateToday }) => {
           />
         </View>
       )}
+
+      {oTasks.length === 0 ? (
+        <View style={styles.header}>
+          <Text style={styles.text}>Other tasks</Text>
+        </View>
+      ) : (
+        <View style={{ flex: 5 }}>
+          <View style={styles.header}>
+            <Text style={styles.text}>Other tasks</Text>
+          </View>
+          <FlatList
+            data={oTasks}
+            renderItem={({ item }) => (
+              <View style={styles.note}>
+                <Text style={styles.text}>
+                  {" "}
+                  {item.note} - {item.due} -{" "}
+                  {item.done === 0 ? "False" : "True"}
+                </Text>
+                <Pressable
+                  onPress={() => setNote(item)}
+                  style={styles.editbutton}
+                ></Pressable>
+                <TouchableOpacity
+                  onPress={() => deleteNote(item.id)}
+                  style={styles.button}
+                >
+                  <Text>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        </View>
+      )} */}
+
       {showForm && (
         <NoteForm
           showForm={showForm}
@@ -297,5 +445,17 @@ const styles = StyleSheet.create({
   date: {
     color: "#fff",
     marginBottom: 40,
+  },
+  editbutton: {
+    width: 20,
+    aspectRatio: "1/1",
+    backgroundColor: "red",
+    borderRadius: 5,
+  },
+  header: {
+    fontWeight: "700",
+    width: 150,
+    padding: 5,
+    backgroundColor: "#00ff00",
   },
 });
