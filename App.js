@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { useState, useEffect } from "react";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 async function initializeDB(db) {
   try {
@@ -49,14 +50,26 @@ export default function App() {
 
 const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
   const [task, setTask] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date("2024-08-18"));
+  const [dateString, setDateString] = useState("");
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const handleOk = () => {
-    temp_note = { note: task, due: date, done: 0 };
+    console.log(date);
+    temp_note = { note: task, due: dateString, done: 0 };
     //setNote(temp_note)
     addNote(temp_note);
     setShowForm(!showForm);
   };
+
+  const onChange = (e, d) => {
+    setDateString(d.toISOString().split("T")[0]);
+    setShowCalendar(!showCalendar);
+  };
+
+  useEffect(() => {
+    console.log(dateString);
+  }, [dateString]);
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -76,12 +89,30 @@ const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
             value={task}
             placeholder="Task"
           />
-          <TextInput
-            style={styles.input}
-            onChangeText={setDate}
-            value={date}
-            placeholder="Due"
-          />
+          <View style={{ flexDirection: "row" }}>
+            {showCalendar && (
+              <DateTimePicker
+                value={date}
+                mode={"date"}
+                is24Hour={true}
+                display="default"
+                onChange={onChange}
+                style={{ backgroundColor: "white" }}
+              />
+            )}
+            <TextInput
+              style={styles.input}
+              onChangeText={setDateString}
+              value={dateString}
+              placeholder="Due"
+            />
+            <Pressable
+              style={styles.calendar}
+              onPress={() => setShowCalendar(!showCalendar)}
+            >
+              <Text>---</Text>
+            </Pressable>
+          </View>
           <Pressable style={styles.button} onPress={handleOk}>
             <Text style={styles.textStyle}>Ok</Text>
           </Pressable>
@@ -91,7 +122,7 @@ const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
   );
 };
 
-const NoteItem = ({ item, handleDelete }) => {
+const NoteItem = ({ item, handleDelete, type }) => {
   return (
     <View style={styles.note}>
       <Text style={styles.text}>
@@ -103,7 +134,7 @@ const NoteItem = ({ item, handleDelete }) => {
         style={styles.editbutton}
       ></Pressable>
       <TouchableOpacity
-        onPress={() => handleDelete(item.id, "c")}
+        onPress={() => handleDelete(item.id, type)}
         style={styles.button}
       >
         <Text>Delete</Text>
@@ -210,12 +241,27 @@ const Content = ({ dateToday }) => {
   };
 
   const handleDelete = (id, section) => {
-    if (section === "c") {
-      index = cTasks.findIndex((k) => k.id === id);
-      console.log(index);
-      setCTasks([...cTasks.slice(0, index), ...cTasks.slice(index + 1)]);
+    console.log(section);
+    try {
+      if (section === "c") {
+        index = cTasks.findIndex((k) => k.id === id);
+        console.log(index);
+        setCTasks([...cTasks.slice(0, index), ...cTasks.slice(index + 1)]);
+      } else if (section === "t") {
+        index = tTasks.findIndex((k) => k.id === id);
+        console.log(index);
+        setTTasks([...tTasks.slice(0, index), ...tTasks.slice(index + 1)]);
+      } else if (section === "o") {
+        index = oTasks.findIndex((k) => k.id === id);
+        console.log(index);
+        setOTasks([...oTasks.slice(0, index), ...oTasks.slice(index + 1)]);
+      } else {
+        throw new Error("Doesn't match type of note");
+      }
+      deleteNote(id);
+    } catch (error) {
+      console.log("Error executing handle delete", error);
     }
-    deleteNote(id);
   };
 
   const handleAdd = () => {
@@ -231,7 +277,7 @@ const Content = ({ dateToday }) => {
     console.log("Notes updated");
   }, [notes]);
 
-  useEffect(() => {}, [cTasks, oTasks, tTasks]);
+  // useEffect(() => {}, [cTasks, oTasks, tTasks]);
 
   useEffect(() => {
     console.log(note);
@@ -285,14 +331,14 @@ const Content = ({ dateToday }) => {
           <FlatList
             data={cTasks}
             renderItem={({ item }) => (
-              <NoteItem item={item} handleDelete={handleDelete} />
+              <NoteItem item={item} handleDelete={handleDelete} type="c" />
             )}
             keyExtractor={(item) => item.id.toString()}
           />
         </View>
       )}
 
-      {/* {tTasks.length === 0 ? (
+      {tTasks.length === 0 ? (
         <View style={styles.header}>
           <Text style={styles.text}>Today's tasks</Text>
         </View>
@@ -304,23 +350,7 @@ const Content = ({ dateToday }) => {
           <FlatList
             data={tTasks}
             renderItem={({ item }) => (
-              <View style={styles.note}>
-                <Text style={styles.text}>
-                  {" "}
-                  {item.note} - {item.due} -{" "}
-                  {item.done === 0 ? "False" : "True"}
-                </Text>
-                <Pressable
-                  onPress={() => setNote(item)}
-                  style={styles.editbutton}
-                ></Pressable>
-                <TouchableOpacity
-                  onPress={() => deleteNote(item.id)}
-                  style={styles.button}
-                >
-                  <Text>Delete</Text>
-                </TouchableOpacity>
-              </View>
+              <NoteItem item={item} handleDelete={handleDelete} type="t" />
             )}
             keyExtractor={(item) => item.id.toString()}
           />
@@ -339,28 +369,12 @@ const Content = ({ dateToday }) => {
           <FlatList
             data={oTasks}
             renderItem={({ item }) => (
-              <View style={styles.note}>
-                <Text style={styles.text}>
-                  {" "}
-                  {item.note} - {item.due} -{" "}
-                  {item.done === 0 ? "False" : "True"}
-                </Text>
-                <Pressable
-                  onPress={() => setNote(item)}
-                  style={styles.editbutton}
-                ></Pressable>
-                <TouchableOpacity
-                  onPress={() => deleteNote(item.id)}
-                  style={styles.button}
-                >
-                  <Text>Delete</Text>
-                </TouchableOpacity>
-              </View>
+              <NoteItem item={item} handleDelete={handleDelete} type="o" />
             )}
             keyExtractor={(item) => item.id.toString()}
           />
         </View>
-      )} */}
+      )}
 
       {showForm && (
         <NoteForm
@@ -457,5 +471,12 @@ const styles = StyleSheet.create({
     width: 150,
     padding: 5,
     backgroundColor: "#00ff00",
+  },
+  calendar: {
+    width: 30,
+    height: 30,
+    backgroundColor: "white",
+    borderColor: "black",
+    borderWidth: 5,
   },
 });
