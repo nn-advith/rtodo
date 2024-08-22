@@ -20,8 +20,7 @@ async function initializeDB(db) {
         CREATE TABLE IF NOT EXISTS notes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           note TEXT,
-          due TEXT,
-          done INTEGER
+          due TEXT
         );
       `);
     console.log("Database initialised");
@@ -30,10 +29,14 @@ async function initializeDB(db) {
   }
 }
 
+const dateFormatter = () => {};
+
 export default function App() {
   const [dateToday, setDateToday] = useState("");
   useEffect(() => {
-    setDateToday(new Date().toISOString().split("T")[0]);
+    setDateToday(
+      new Date().toISOString().split("T")[0].split("-").reverse().join("-")
+    );
   }, []);
 
   return (
@@ -48,22 +51,39 @@ export default function App() {
   );
 }
 
-const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
+const NoteForm = ({
+  dateToday,
+  showForm,
+  setShowForm,
+  note,
+  setNote,
+  addNote,
+}) => {
   const [task, setTask] = useState("");
-  const [date, setDate] = useState(new Date("2024-08-18"));
+  const [date, setDate] = useState(
+    new Date(dateToday.split("-").reverse().join("-"))
+  );
   const [dateString, setDateString] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
 
+  const [taskEmpty, setTaskEmpty] = useState(false);
+  const [dateError, setDateError] = useState(false);
+
   const handleOk = () => {
-    console.log(date);
-    temp_note = { note: task, due: dateString, done: 0 };
-    //setNote(temp_note)
+    if (task.length === 0) {
+      setTaskEmpty(true);
+    }
+    temp_note = { note: task, due: dateString };
     addNote(temp_note);
     setShowForm(!showForm);
   };
 
   const onChange = (e, d) => {
-    setDateString(d.toISOString().split("T")[0]);
+    if (e.type === "set") {
+      setDateString(
+        d.toISOString().split("T")[0].split("-").reverse().join("-")
+      );
+    }
     setShowCalendar(!showCalendar);
   };
 
@@ -108,7 +128,19 @@ const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
             />
             <Pressable
               style={styles.calendar}
-              onPress={() => setShowCalendar(!showCalendar)}
+              onPress={() => {
+                if (dateString.split("-").length === 3) {
+                  if (
+                    isNaN(new Date(dateString.split("-").reverse().join("-")))
+                  ) {
+                  } else {
+                    setDate(
+                      new Date(dateString.split("-").reverse().join("-"))
+                    );
+                  }
+                }
+                setShowCalendar(!showCalendar);
+              }}
             >
               <Text>---</Text>
             </Pressable>
@@ -122,12 +154,12 @@ const NoteForm = ({ showForm, setShowForm, note, setNote, addNote }) => {
   );
 };
 
-const NoteItem = ({ item, handleDelete, type }) => {
+const NoteItem = ({ item, handleDelete, type, setNote }) => {
   return (
     <View style={styles.note}>
       <Text style={styles.text}>
         {" "}
-        {item.note} - {item.due} - {item.done === 0 ? "False" : "True"}
+        {item.note} - {item.due}
       </Text>
       <Pressable
         onPress={() => setNote(item)}
@@ -163,23 +195,23 @@ const Content = ({ dateToday }) => {
     }
   };
 
-  const ctnote = (note) => {
-    try {
-      console.log(note);
-      const todayDate = new Date(dateToday).getTime();
-      const noteDate = new Date(note.due).getTime();
+  // const ctnote = (note) => {
+  //   try {
+  //     console.log(note);
+  //     const todayDate = new Date(dateToday).getTime();
+  //     const noteDate = new Date(note.due).getTime();
 
-      if (todayDate < noteDate) {
-        return 1;
-      } else if (todayDate === noteDate) {
-        return 0;
-      } else {
-        return -1;
-      }
-    } catch (error) {
-      console.log("Error while getting something:", error);
-    }
-  };
+  //     if (todayDate < noteDate) {
+  //       return 1;
+  //     } else if (todayDate === noteDate) {
+  //       return 0;
+  //     } else {
+  //       return -1;
+  //     }
+  //   } catch (error) {
+  //     console.log("Error while getting something:", error);
+  //   }
+  // };
 
   const categorizeNotes = () => {
     try {
@@ -285,44 +317,8 @@ const Content = ({ dateToday }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* {notes.length === 0 ? (
-        <View style={{ flex: 5 }}>
-          <Text style={styles.text}>NONE</Text>
-        </View>
-      ) : (
-        <View style={{ flex: 5 }}>
-          <FlatList
-            data={notes}
-            renderItem={({ item }) => {
-              ctnote(item) === 1 ? (
-                <View style={styles.note}>
-                  <Text style={styles.text}>
-                    {" "}
-                    {item.note} - {item.due} -{" "}
-                    {item.done === 0 ? "False" : "True"}
-                  </Text>
-                  <Pressable
-                    onPress={() => setNote(item)}
-                    style={styles.editbutton}
-                  ></Pressable>
-                  <TouchableOpacity
-                    onPress={() => deleteNote(item.id)}
-                    style={styles.button}
-                  >
-                    <Text>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null;
-            }}
-            keyExtractor={(item) => item.id.toString()}
-          />
-        </View>
-      )} */}
-
       {cTasks.length === 0 ? (
-        <View style={styles.header}>
-          <Text style={styles.text}>Carried Over</Text>
-        </View>
+        <View></View>
       ) : (
         <View style={{ flex: 5 }}>
           <View style={styles.header}>
@@ -331,7 +327,12 @@ const Content = ({ dateToday }) => {
           <FlatList
             data={cTasks}
             renderItem={({ item }) => (
-              <NoteItem item={item} handleDelete={handleDelete} type="c" />
+              <NoteItem
+                item={item}
+                handleDelete={handleDelete}
+                type="c"
+                setNote={setNote}
+              />
             )}
             keyExtractor={(item) => item.id.toString()}
           />
@@ -339,9 +340,7 @@ const Content = ({ dateToday }) => {
       )}
 
       {tTasks.length === 0 ? (
-        <View style={styles.header}>
-          <Text style={styles.text}>Today's tasks</Text>
-        </View>
+        <View></View>
       ) : (
         <View style={{ flex: 5 }}>
           <View style={styles.header}>
@@ -350,7 +349,12 @@ const Content = ({ dateToday }) => {
           <FlatList
             data={tTasks}
             renderItem={({ item }) => (
-              <NoteItem item={item} handleDelete={handleDelete} type="t" />
+              <NoteItem
+                item={item}
+                handleDelete={handleDelete}
+                type="t"
+                setNote={setNote}
+              />
             )}
             keyExtractor={(item) => item.id.toString()}
           />
@@ -358,9 +362,7 @@ const Content = ({ dateToday }) => {
       )}
 
       {oTasks.length === 0 ? (
-        <View style={styles.header}>
-          <Text style={styles.text}>Other tasks</Text>
-        </View>
+        <View></View>
       ) : (
         <View style={{ flex: 5 }}>
           <View style={styles.header}>
@@ -369,7 +371,12 @@ const Content = ({ dateToday }) => {
           <FlatList
             data={oTasks}
             renderItem={({ item }) => (
-              <NoteItem item={item} handleDelete={handleDelete} type="o" />
+              <NoteItem
+                item={item}
+                handleDelete={handleDelete}
+                type="o"
+                setNote={setNote}
+              />
             )}
             keyExtractor={(item) => item.id.toString()}
           />
@@ -378,6 +385,7 @@ const Content = ({ dateToday }) => {
 
       {showForm && (
         <NoteForm
+          dateToday={dateToday}
           showForm={showForm}
           setShowForm={setShowForm}
           note={note}
@@ -392,15 +400,6 @@ const Content = ({ dateToday }) => {
           color="#fff"
         >
           <Text>Add</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={{ flex: 2, backgroundColor: "blue" }}>
-        <TouchableOpacity
-          onPress={() => console.log(oTasks, cTasks, tTasks)}
-          style={styles.button}
-          color="#fff"
-        >
-          <Text>LOG</Text>
         </TouchableOpacity>
       </View>
     </View>
