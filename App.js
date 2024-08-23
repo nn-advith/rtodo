@@ -12,6 +12,7 @@ import {
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { useState, useEffect } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from "moment";
 
 async function initializeDB(db) {
   try {
@@ -28,8 +29,6 @@ async function initializeDB(db) {
     console.log("Error initialising DB", error);
   }
 }
-
-const dateFormatter = () => {};
 
 export default function App() {
   const [dateToday, setDateToday] = useState("");
@@ -69,13 +68,33 @@ const NoteForm = ({
   const [taskEmpty, setTaskEmpty] = useState(false);
   const [dateError, setDateError] = useState(false);
 
+  const validDate = (ds) => {
+    if (moment(ds, "DD-MM-YYYY", true).isValid()) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   const handleOk = () => {
+    if (validDate(dateString)) {
+      setDateError(false);
+    } else {
+      setDateError(true);
+    }
+
     if (task.length === 0) {
       setTaskEmpty(true);
+    } else {
+      setTaskEmpty(false);
     }
     temp_note = { note: task, due: dateString };
-    addNote(temp_note);
-    setShowForm(!showForm);
+    if (validDate(dateString) === true && task.length !== 0) {
+      addNote(temp_note);
+      setShowForm(!showForm);
+    } else {
+      console.log("ERROR in FORM");
+    }
   };
 
   const onChange = (e, d) => {
@@ -129,16 +148,6 @@ const NoteForm = ({
             <Pressable
               style={styles.calendar}
               onPress={() => {
-                if (dateString.split("-").length === 3) {
-                  if (
-                    isNaN(new Date(dateString.split("-").reverse().join("-")))
-                  ) {
-                  } else {
-                    setDate(
-                      new Date(dateString.split("-").reverse().join("-"))
-                    );
-                  }
-                }
                 setShowCalendar(!showCalendar);
               }}
             >
@@ -194,24 +203,6 @@ const Content = ({ dateToday }) => {
       console.log("Error fetching data :", error);
     }
   };
-
-  // const ctnote = (note) => {
-  //   try {
-  //     console.log(note);
-  //     const todayDate = new Date(dateToday).getTime();
-  //     const noteDate = new Date(note.due).getTime();
-
-  //     if (todayDate < noteDate) {
-  //       return 1;
-  //     } else if (todayDate === noteDate) {
-  //       return 0;
-  //     } else {
-  //       return -1;
-  //     }
-  //   } catch (error) {
-  //     console.log("Error while getting something:", error);
-  //   }
-  // };
 
   const categorizeNotes = () => {
     try {
