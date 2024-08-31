@@ -16,6 +16,8 @@ import { useState, useEffect } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
 import { getStatusBarHeight } from "react-native-status-bar-height";
+import { LinearGradient } from "expo-linear-gradient";
+import Entypo from "@expo/vector-icons/Entypo";
 
 async function initializeDB(db) {
   try {
@@ -52,7 +54,12 @@ export default function App() {
   return (
     <SQLiteProvider databaseName="notes.db" onInit={initializeDB}>
       <View style={styles.container}>
-        <View style={styles.banner}>
+        <View
+          // colors={["#0a0a0a", "#0a0a0a", "#0a0a0a00"]}
+          // locations={[0.7, 0.8, 1]}
+          style={styles.banner}
+          pointerEvents="none"
+        >
           <Text style={styles.text2}>
             {dd}
             <Text style={{ color: "#ff3333" }}>/</Text>
@@ -126,7 +133,14 @@ const NoteForm = ({
   useEffect(() => {}, [dateString]);
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        height: Dimensions.get("window").height,
+      }}
+    >
       <Modal
         animationType="slide"
         transparent={true}
@@ -143,6 +157,7 @@ const NoteForm = ({
             value={task}
             placeholder="Task"
           />
+          {taskEmpty ? <Text style={styles.text}> EMPTY</Text> : null}
           <View style={{ flexDirection: "row" }}>
             {showCalendar && (
               <DateTimePicker
@@ -169,6 +184,7 @@ const NoteForm = ({
               <Text>---</Text>
             </Pressable>
           </View>
+          {dateError ? <Text style={styles.text}> Invalid</Text> : null}
           <Pressable style={styles.button} onPress={handleOk}>
             <Text style={styles.textStyle}>Ok</Text>
           </Pressable>
@@ -179,19 +195,54 @@ const NoteForm = ({
 };
 
 const NoteItem = ({ item, handleDelete, type, setNote }) => {
+  const [dueInWords, setDueInWords] = useState("");
+
+  const getDueInWords = () => {
+    dueDate = new Date(item.due.split("-").reverse().join("-"));
+    today = new Date().getDate();
+
+    yesterday = today - 1;
+    tomorrow = today + 1;
+    if (dueDate.getDate() === yesterday) {
+      setDueInWords("Due Yesterday");
+    } else if (dueDate.getDate() === tomorrow) {
+      setDueInWords("Due Tomorrow");
+    } else if (dueDate.getDate() === today) {
+      setDueInWords("Due Today");
+    } else {
+      setDueInWords(
+        "Due " + dueDate.toString().split(" ").slice(1, 3).join(" ")
+      );
+    }
+  };
+
+  useEffect(() => {
+    getDueInWords();
+  }, []);
+
   return (
     <View style={styles.note}>
-      <Text style={styles.text}>
-        {" "}
-        {item.note} - {item.due}
-      </Text>
+      <TouchableOpacity
+        style={{ flexDirection: "row" }}
+        onPress={() => setNote(item)}
+      >
+        <Text style={[styles.text, { fontSize: 18 }]}>{item.note}</Text>
+        <Text
+          style={[
+            styles.text,
+            { marginLeft: 25, color: "#a4a4a4", paddingTop: 5 },
+          ]}
+        >
+          {dueInWords}
+        </Text>
+      </TouchableOpacity>
       {/* <Pressable
         onPress={() => setNote(item)}
         style={styles.editbutton}
       ></Pressable> */}
       <TouchableOpacity
         onPress={() => handleDelete(item.id, type)}
-        style={styles.button}
+        style={styles.check}
       ></TouchableOpacity>
     </View>
   );
@@ -303,19 +354,6 @@ const Content = ({ dateToday }) => {
   };
 
   useEffect(() => {
-    // addNote({ note: "TASK", due: "31-03-2024" });
-    // addNote({ note: "TASK", due: "31-03-2024" });
-    // addNote({ note: "TASK", due: "31-03-2024" });
-    // addNote({ note: "TASK", due: "31-10-2024" });
-    // addNote({ note: "TASK", due: "31-10-2024" });
-    // addNote({ note: "TASK", due: "31-10-2024" });
-    // addNote({ note: "TASK", due: "31-03-2024" });
-    // addNote({ note: "TASK", due: "31-03-2024" });
-    // addNote({ note: "TASK", due: "31-03-2024" });
-    // addNote({ note: "TASK", due: "31-10-2024" });
-    // addNote({ note: "TASK", due: "31-10-2024" });
-    // addNote({ note: "TASK", due: "31-10-2024" });
-
     // deleteAllNotes();
     getNotes();
   }, []);
@@ -335,19 +373,33 @@ const Content = ({ dateToday }) => {
       style={{
         flex: 15,
         width: Dimensions.get("window").width,
-        paddingTop: 20,
+        // paddingTop: 70,
       }}
     >
-      <View style={{ flex: 10, padding: 0, margin: 0 }}>
-        <ScrollView
-          style={{ flex: 1, overflow: "visible" }}
-          horizontal={false}
-          removeClippedSubviews={false}
-        >
+      <View style={{ flex: 12 }}>
+        <LinearGradient
+          colors={["#0a0a0a", "#0a0a0a77", "#0a0a0a00"]}
+          locations={[0.01, 0.4, 1]}
+          style={{
+            height: 40,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: Dimensions.get("window").width,
+            zIndex: 5,
+          }}
+        />
+        <ScrollView style={{ flex: 1, paddingTop: 20 }} horizontal={false}>
           {cTasks.length === 0 ? (
             <View></View>
           ) : (
-            <View style={{ borderLeftColor: "#ff3333", borderLeftWidth: 1 }}>
+            <View
+              style={{
+                borderLeftColor: "#ff3333",
+                borderLeftWidth: 2,
+                marginBottom: 40,
+              }}
+            >
               <View style={styles.header}>
                 <Text style={styles.text3}>Pending</Text>
               </View>
@@ -372,7 +424,13 @@ const Content = ({ dateToday }) => {
           {tTasks.length === 0 ? (
             <View></View>
           ) : (
-            <View style={{ borderLeftColor: "#33A9FF", borderLeftWidth: 2 }}>
+            <View
+              style={{
+                borderLeftColor: "#33A9FF",
+                borderLeftWidth: 2,
+                marginBottom: 40,
+              }}
+            >
               <View style={styles.header}>
                 <Text style={styles.text3}>Today</Text>
               </View>
@@ -397,9 +455,15 @@ const Content = ({ dateToday }) => {
           {oTasks.length === 0 ? (
             <View></View>
           ) : (
-            <View style={{ borderLeftColor: "#2CDD00", borderLeftWidth: 1 }}>
+            <View
+              style={{
+                borderLeftColor: "#2CDD00",
+                borderLeftWidth: 2,
+                marginBottom: 40,
+              }}
+            >
               <View style={styles.header}>
-                <Text style={styles.text3}>Other</Text>
+                <Text style={styles.text3}>Upcoming</Text>
               </View>
               <FlatList
                 data={oTasks}
@@ -418,28 +482,54 @@ const Content = ({ dateToday }) => {
               />
             </View>
           )}
-
-          {showForm && (
-            <NoteForm
-              dateToday={dateToday}
-              showForm={showForm}
-              setShowForm={setShowForm}
-              note={note}
-              setNote={setNote}
-              addNote={addNote}
-            />
-          )}
         </ScrollView>
+        <LinearGradient
+          colors={["#0a0a0a", "#0a0a0a77", "#0a0a0a00"]}
+          locations={[0.01, 0.4, 1]}
+          style={{
+            height: 40,
+            position: "absolute",
+            bottom: -5,
+            left: 0,
+            width: Dimensions.get("window").width,
+            zIndex: 5,
+            transform: [{ rotate: "180deg" }],
+          }}
+        />
       </View>
-      <View style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "flex-end",
+          zIndex: 100,
+          justifyContent: "center",
+          // backgroundColor: "#d078ff",
+          // position: "absolute",
+          // bottom: 0,
+          // right: 0,
+          width: Dimensions.get("window").width,
+        }}
+        // colors={["#0a0a0a00", "#0a0a0a", "#0a0a0a"]}
+        // locations={[0.02, 0.3, 1]}
+      >
         <TouchableOpacity
           onPress={handleAdd}
-          style={styles.button}
+          style={styles.addButton}
           color="#fff"
         >
-          <Text>Add</Text>
+          <Entypo name="plus" size={36} color="#7a7a7a" />
         </TouchableOpacity>
       </View>
+      {showForm && (
+        <NoteForm
+          dateToday={dateToday}
+          showForm={showForm}
+          setShowForm={setShowForm}
+          note={note}
+          setNote={setNote}
+          addNote={addNote}
+        />
+      )}
     </View>
   );
 };
@@ -450,16 +540,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#0a0a0a",
     alignItems: "flex-start",
     justifyContent: "flex-start",
-    paddingTop: getStatusBarHeight(),
+    // paddingTop: getStatusBarHeight(),
     paddingLeft: 10,
   },
   banner: {
     flex: 1,
     flexDirection: "row",
     paddingHorizontal: 7,
-    backgroundColor: "#0a0a0a",
+    // backgroundColor: "#d078ff",
+    // marginTop: 7,
+    paddingTop: getStatusBarHeight() + 7,
+    zIndex: 100,
     width: Dimensions.get("window").width,
-    marginTop: 7,
   },
   text1: {
     fontWeight: "800",
@@ -477,7 +569,7 @@ const styles = StyleSheet.create({
   text3: {
     fontWeight: "400",
     color: "#9F9F9F",
-    fontSize: 18,
+    fontSize: 14,
     paddingLeft: 12,
   },
   title: {
@@ -490,12 +582,12 @@ const styles = StyleSheet.create({
   },
   content: {},
   note: {
-    marginBottom: 20,
+    paddingVertical: 10,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "90%",
-    paddingLeft: 7,
+    width: "92%",
+    paddingLeft: 12,
   },
   button: {
     color: "#000",
@@ -506,6 +598,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 25,
     width: 100,
+  },
+  addButton: {
+    width: 50,
+    height: 50,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "red",
+    marginRight: 20,
   },
   form: {
     flex: 1,
@@ -544,5 +645,11 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderColor: "black",
     borderWidth: 5,
+  },
+  check: {
+    width: 20,
+    height: 20,
+    borderColor: "#A6A6A6",
+    borderWidth: 2,
   },
 });
