@@ -1,0 +1,132 @@
+import { StyleSheet, Dimensions } from "react-native";
+import { getStatusBarHeight } from "react-native-status-bar-height";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0a0a0a",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    // paddingTop: getStatusBarHeight(),
+    paddingLeft: 10,
+  },
+  banner: {
+    flex: 1,
+    flexDirection: "row",
+    paddingHorizontal: 7,
+    // backgroundColor: "#d078ff",
+    // marginTop: 7,
+    paddingTop: getStatusBarHeight() + 7,
+    zIndex: 100,
+    width: Dimensions.get("window").width,
+  },
+  text1: {
+    fontWeight: "800",
+    color: "#ff3333",
+    fontSize: 34,
+    marginLeft: 7,
+  },
+  text2: {
+    fontWeight: "600",
+    color: "#fff",
+    fontSize: 22,
+    paddingTop: 10,
+    marginLeft: 10,
+  },
+  text3: {
+    fontWeight: "400",
+    color: "#9F9F9F",
+    fontSize: 14,
+    paddingLeft: 12,
+  },
+  title: {
+    fontSize: 28,
+    color: "#FFF",
+    fontWeight: "bold",
+  },
+  text: {
+    color: "#FFF",
+  },
+  content: {},
+  note: {
+    paddingVertical: 10,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "92%",
+    paddingLeft: 12,
+  },
+  button: {
+    color: "#000",
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 25,
+    width: 100,
+  },
+  addButton: {
+    width: 50,
+    height: 50,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "red",
+    marginRight: 20,
+  },
+  form: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    backgroundColor: "#000000bb",
+  },
+  formContent: {
+    width: Dimensions.get("window").width,
+    backgroundColor: "#101010",
+    paddingVertical: 30,
+  },
+  input: {
+    height: 40,
+    borderWidth: 0,
+    padding: 10,
+    width: "100%",
+    paddingVertical: 10,
+    color: "#fff",
+  },
+  date: {
+    color: "#fff",
+    marginBottom: 40,
+  },
+  editbutton: {
+    width: 20,
+    aspectRatio: "1/1",
+    backgroundColor: "red",
+    borderRadius: 5,
+  },
+  header: {
+    fontWeight: "500",
+    paddingHorizontal: 0,
+    color: "#9F9F9F",
+    // width: Dimensions.get("window").width,
+    marginBottom: 15,
+    flexDirection: "row",
+  },
+  calendar: {
+    width: 30,
+    height: 30,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    right: "6%",
+  },
+  check: {
+    width: 20,
+    height: 20,
+    borderColor: "#A6A6A6",
+    borderWidth: 2,
+  },
+});
+
+export default styles;
