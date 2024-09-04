@@ -18,13 +18,14 @@ import Entypo from "@expo/vector-icons/Entypo";
 import NoteForm from "./NoteForm";
 import NoteItem from "./NoteItem";
 
-const Content = ({ dateToday }) => {
+const Content = ({ dateToday, setStatusColor }) => {
   const db = useSQLiteContext();
 
   const [notes, setNotes] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [note, setNote] = useState({});
 
+  const [error, setError] = useState("");
   const [cTasks, setCTasks] = useState([]);
   const [tTasks, setTTasks] = useState([]);
   const [oTasks, setOTasks] = useState([]);
@@ -35,6 +36,7 @@ const Content = ({ dateToday }) => {
       setNotes(notes);
     } catch (error) {
       console.log("Error fetching data :", error);
+      setStatusColor("#ff6800"); //orange
     }
   };
 
@@ -63,6 +65,7 @@ const Content = ({ dateToday }) => {
       }
     } catch (error) {
       console.log("Error categorizing notes", error);
+      setStatusColor("#0808ff"); //blue
     }
   };
 
@@ -75,6 +78,8 @@ const Content = ({ dateToday }) => {
       await getNotes();
     } catch (error) {
       console.log("Error while adding note : ", error);
+      setError(Error);
+      setStatusColor("#e908ff"); //blue
     }
   };
 
@@ -252,6 +257,7 @@ const Content = ({ dateToday }) => {
               />
             </View>
           )}
+          <Text>{error}</Text>
         </ScrollView>
         <LinearGradient
           colors={["#0a0a0a", "#0a0a0a77", "#0a0a0a00"]}

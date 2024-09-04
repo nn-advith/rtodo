@@ -13,6 +13,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import moment from "moment";
 import { toLocalISOString } from "../common/utils";
+import { useSQLiteContext } from "expo-sqlite";
 
 const NoteForm = ({
   dateToday,
@@ -22,6 +23,8 @@ const NoteForm = ({
   setNote,
   addNote,
 }) => {
+  const db = useSQLiteContext();
+
   const [task, setTask] = useState("");
   const [date, setDate] = useState(
     new Date(dateToday.split("-").reverse().join("-"))

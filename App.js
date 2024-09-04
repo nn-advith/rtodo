@@ -1,18 +1,7 @@
 import { StatusBar } from "expo-status-bar";
-import {
-  FlatList,
-  Modal,
-  Text,
-  TouchableOpacity,
-  View,
-  Dimensions,
-  ScrollView,
-} from "react-native";
+import { Text, View } from "react-native";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { useState, useEffect } from "react";
-import moment from "moment";
-import { LinearGradient } from "expo-linear-gradient";
-import Entypo from "@expo/vector-icons/Entypo";
 
 import styles from "./styles/styles";
 
@@ -21,6 +10,7 @@ import Content from "./components/Content";
 import { toLocalISOString } from "./common/utils";
 
 async function initializeDB(db) {
+  // const db = await openDatabaseAsync("notes.db");
   try {
     await db.execAsync(`
         PRAGMA journal_mode = WAL;
@@ -31,6 +21,7 @@ async function initializeDB(db) {
         );
       `);
     console.log("Database initialised");
+    // await db.closeAsync();
   } catch (error) {
     console.log("Error initialising DB", error);
   }
@@ -41,6 +32,11 @@ export default function App() {
   const [dayToday, setDayToday] = useState("");
   const [dd, setDD] = useState("01");
   const [mm, setMM] = useState("01");
+
+  const [statusColor, setStatusColor] = useState("#0a0a0a");
+
+  // check if directory is
+
   useEffect(() => {
     const date = new Date();
 
@@ -54,8 +50,13 @@ export default function App() {
   }, []);
 
   return (
-    <SQLiteProvider databaseName="notes.db" onInit={initializeDB}>
-      <View style={styles.container}>
+    <SQLiteProvider
+      // assetSource={{ assetId: require("./assets/notes.db") }}
+      databaseName="notes.db"
+      onInit={initializeDB}
+      onError={() => setStatusColor("ff0000")}
+    >
+      <View style={[styles.container, { backgroundColor: statusColor }]}>
         <View
           // colors={["#0a0a0a", "#0a0a0a", "#0a0a0a00"]}
           // locations={[0.7, 0.8, 1]}
@@ -69,7 +70,11 @@ export default function App() {
           </Text>
           <Text style={styles.text1}>{dayToday}</Text>
         </View>
-        <Content style={styles.content} dateToday={dateToday} />
+        <Content
+          style={styles.content}
+          dateToday={dateToday}
+          setStatusColor={setStatusColor}
+        />
       </View>
       <StatusBar style="light" />
     </SQLiteProvider>
