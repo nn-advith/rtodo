@@ -9,10 +9,10 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~3.2.1",
+    "@expo/metro-runtime": "~3.2.3",
     "@expo/vector-icons": "^14.0.2",
     "@react-native-community/datetimepicker": "8.0.1",
-    "expo": "~51.0.26",
+    "expo": "~51.0.31",
     "expo-sqlite": "~14.0.6",
     "expo-status-bar": "~1.12.1",
     "moment": "^2.30.1",
@@ -22,7 +22,8 @@
     "react-native-status-bar-height": "^2.6.0",
     "react-native-web": "~0.19.10",
     "expo-linear-gradient": "~13.0.2",
-    "expo-notifications": "~0.28.16"
+    "expo-notifications": "~0.28.16",
+    "expo-file-system": "~17.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
