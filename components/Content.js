@@ -18,8 +18,8 @@ import Entypo from "@expo/vector-icons/Entypo";
 import NoteForm from "./NoteForm";
 import NoteItem from "./NoteItem";
 
-const Content = ({ dateToday, setStatusColor }) => {
-  const db = useSQLiteContext();
+const Content = ({ dateToday, setStatusColor, db }) => {
+  // const db = useSQLiteContext();
 
   const [notes, setNotes] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -30,10 +30,12 @@ const Content = ({ dateToday, setStatusColor }) => {
   const [tTasks, setTTasks] = useState([]);
   const [oTasks, setOTasks] = useState([]);
 
-  const getNotes = async () => {
+  const getNotes = () => {
     try {
-      const notes = await db.getAllAsync("SELECT * FROM notes");
-      setNotes(notes);
+      db.withTransactionSync(() => {
+        setNotes(db.getAllSync("SELECT * FROM notes"));
+      });
+      // setNotes(notes);
     } catch (error) {
       console.log("Error fetching data :", error);
       setStatusColor("#ff6800"); //orange
@@ -69,13 +71,16 @@ const Content = ({ dateToday, setStatusColor }) => {
     }
   };
 
-  const addNote = async (newNote) => {
+  const addNote = (newNote) => {
     try {
-      const statement = await db.prepareAsync(
-        "INSERT INTO notes (note, due, done) VALUES (?,?,?)"
-      );
-      await statement.executeAsync([newNote.note, newNote.due, newNote.done]);
-      await getNotes();
+      db.withTransactionSync(() => {
+        db.runSync(`INSERT INTO notes (note, due) VALUES (?,?)`, [
+          newNote.note,
+          newNote.due,
+        ]);
+      });
+
+      getNotes();
     } catch (error) {
       console.log("Error while adding note : ", error);
       setError(Error);
@@ -83,19 +88,21 @@ const Content = ({ dateToday, setStatusColor }) => {
     }
   };
 
-  const deleteAllNotes = async () => {
-    try {
-      await db.runAsync("DELETE FROM notes");
-      await getNotes();
-    } catch (error) {
-      console.log("Error while deleting all the notes : ", error);
-    }
-  };
+  // const deleteAllNotes = async () => {
+  //   try {
+  //     await db.runAsync("DELETE FROM notes");
+  //     await getNotes();
+  //   } catch (error) {
+  //     console.log("Error while deleting all the notes : ", error);
+  //   }
+  // };
 
-  const deleteNote = async (id) => {
+  const deleteNote = (id) => {
     try {
-      await db.runAsync("DELETE FROM notes WHERE id = ?", [id]);
-      await getNotes();
+      db.withTransactionSync(() => {
+        db.runSync("DELETE FROM notes WHERE id = ?", [id]);
+      });
+      getNotes();
     } catch (error) {
       console.log("Error while deleting note : ", error);
     }
@@ -257,7 +264,6 @@ const Content = ({ dateToday, setStatusColor }) => {
               />
             </View>
           )}
-          <Text>{error}</Text>
         </ScrollView>
         <LinearGradient
           colors={["#0a0a0a", "#0a0a0a77", "#0a0a0a00"]}
