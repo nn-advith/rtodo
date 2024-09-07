@@ -46,25 +46,21 @@ const Content = ({ dateToday, setStatusColor, db }) => {
     try {
       const todayDate = moment(dateToday, "DD-MM-YYYY").valueOf();
 
-      for (i = 0; i < notes.length; i++) {
-        const noteDate = moment(notes[i].due, "DD-MM-YYYY").valueOf();
-        if (noteDate === null) {
-          setOTasks((oTasks) => [...oTasks, notes[i]]);
-        }
-        if (todayDate < noteDate) {
-          if (!oTasks.some((k) => k.id === notes[i].id)) {
-            setOTasks([...oTasks, notes[i]]);
-          }
-        } else if (todayDate === noteDate) {
-          if (!tTasks.some((k) => k.id === notes[i].id)) {
-            setTTasks([...tTasks, notes[i]]);
-          }
-        } else {
-          if (!cTasks.some((k) => k.id === notes[i].id)) {
-            setCTasks([...cTasks, notes[i]]);
-          }
-        }
-      }
+      setOTasks(
+        notes.filter(
+          (item) => moment(item.due, "DD-MM-YYYY").valueOf() > todayDate
+        )
+      );
+      setTTasks(
+        notes.filter(
+          (item) => moment(item.due, "DD-MM-YYYY").valueOf() === todayDate
+        )
+      );
+      setCTasks(
+        notes.filter(
+          (item) => moment(item.due, "DD-MM-YYYY").valueOf() < todayDate
+        )
+      );
     } catch (error) {
       console.log("Error categorizing notes", error);
       setStatusColor("#0808ff"); //blue
@@ -216,7 +212,17 @@ const Content = ({ dateToday, setStatusColor, db }) => {
               <View style={styles.header}>
                 <Text style={styles.text3}>Today</Text>
               </View>
-              <FlatList
+              {tTasks.map((item, index) => (
+                <View key={item.id.toString()}>
+                  <NoteItem
+                    item={item}
+                    handleDelete={handleDelete}
+                    type="t"
+                    setNote={setNote}
+                  />
+                </View>
+              ))}
+              {/* <FlatList
                 data={tTasks}
                 renderItem={({ item }) => (
                   <NoteItem
@@ -230,7 +236,7 @@ const Content = ({ dateToday, setStatusColor, db }) => {
                 horizontal={false}
                 scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
-              />
+              /> */}
             </View>
           )}
 
