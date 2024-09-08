@@ -212,17 +212,7 @@ const Content = ({ dateToday, setStatusColor, db }) => {
               <View style={styles.header}>
                 <Text style={styles.text3}>Today</Text>
               </View>
-              {tTasks.map((item, index) => (
-                <View key={item.id.toString()}>
-                  <NoteItem
-                    item={item}
-                    handleDelete={handleDelete}
-                    type="t"
-                    setNote={setNote}
-                  />
-                </View>
-              ))}
-              {/* <FlatList
+              <FlatList
                 data={tTasks}
                 renderItem={({ item }) => (
                   <NoteItem
@@ -236,7 +226,7 @@ const Content = ({ dateToday, setStatusColor, db }) => {
                 horizontal={false}
                 scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
-              /> */}
+              />
             </View>
           )}
 

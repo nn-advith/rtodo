@@ -22,8 +22,6 @@ const NoteForm = ({
   setNote,
   addNote,
 }) => {
-  // const db = useSQLiteContext();
-
   const [task, setTask] = useState("");
   const [date, setDate] = useState(
     new Date(dateToday.split("-").reverse().join("-"))
@@ -43,6 +41,7 @@ const NoteForm = ({
   };
 
   const handleOk = () => {
+    disableCalendar();
     if (validDate(dateString)) {
       setDateError(false);
     } else {
@@ -57,31 +56,33 @@ const NoteForm = ({
     temp_note = { note: task, due: dateString };
     if (validDate(dateString) === true && task.length !== 0) {
       addNote(temp_note);
+
       setShowForm(!showForm);
     } else {
     }
   };
 
+  const enableCalendar = () => {
+    setShowCalendar(true);
+  };
+
+  const disableCalendar = () => {
+    setShowCalendar(false);
+  };
+
   const onChange = (e, d) => {
+    console.log(e);
     if (e.type === "set") {
       setDateString(
         toLocalISOString(d).split("T")[0].split("-").reverse().join("-")
       );
+      disableCalendar();
+    } else {
+      disableCalendar();
     }
-    setShowCalendar(!showCalendar);
   };
 
-  useEffect(() => {}, [dateString]);
-
   return (
-    // <View
-    //   style={{
-    //     flex: 1,
-    //     justifyContent: "center",
-    //     alignItems: "center",
-    //     height: Dimensions.get("window").height,
-    //   }}
-    // >
     <Modal
       animationType="slide"
       transparent={true}
@@ -111,7 +112,6 @@ const NoteForm = ({
               value={task}
               placeholder="Task"
               placeholderTextColor={"#474747"}
-              // underlineColorAndroid={"#aaa"}
             />
             <Text
               style={[
@@ -153,6 +153,7 @@ const NoteForm = ({
                   setDateString(e), setDateError(false);
                 }}
                 value={dateString}
+                maxLength={10}
                 placeholder="Due"
                 placeholderTextColor={"#474747"}
               />
@@ -170,16 +171,10 @@ const NoteForm = ({
                 Invalid date
               </Text>
             </View>
-            <Pressable
-              style={styles.calendar}
-              onPress={() => {
-                setShowCalendar(!showCalendar);
-              }}
-            >
+            <Pressable style={styles.calendar} onPress={enableCalendar}>
               <AntDesign name="calendar" size={24} color="white" />
             </Pressable>
           </View>
-          {/* {dateError ? <Text style={styles.text}> Invalid</Text> : null} */}
           <View
             style={{
               flex: 1,
@@ -201,7 +196,6 @@ const NoteForm = ({
         </View>
       </View>
     </Modal>
-    // </View>
   );
 };
 
