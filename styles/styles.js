@@ -13,18 +13,20 @@ const styles = StyleSheet.create({
   banner: {
     flex: 1,
     flexDirection: "row",
-    paddingHorizontal: 7,
+    paddingLeft: 6,
     // backgroundColor: "#d078ff",
     // marginTop: 7,
-    paddingTop: getStatusBarHeight() + 7,
+    paddingTop: getStatusBarHeight() + 20,
     zIndex: 100,
-    width: Dimensions.get("window").width,
+    width: Dimensions.get("window").width * 0.92,
+    justifyContent: "space-between",
   },
   text1: {
     fontWeight: "800",
     color: "#ff3333",
-    fontSize: 34,
+    fontSize: 26,
     marginLeft: 7,
+    marginTop: 7,
   },
   text2: {
     fontWeight: "600",
@@ -130,6 +132,20 @@ const styles = StyleSheet.create({
     borderColor: "#A6A6A6",
     borderWidth: 2,
     marginTop: 3,
+  },
+  notificationToggle: {
+    width: 15,
+    height: 15,
+    marginTop: 20,
+    borderRadius: 10,
+    borderColor: "#ff333399",
+    borderWidth: 2,
+    zIndex: 101,
+    backgroundColor: "#ff333399",
+  },
+  bannerDate: {
+    flex: 1,
+    flexDirection: "row",
   },
 });
 
