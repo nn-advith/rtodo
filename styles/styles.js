@@ -53,8 +53,11 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "92%",
+    alignItems: "top",
+    // width: "92%",
+    width: Dimensions.get("window").width * 0.92,
     paddingLeft: 12,
+    // backgroundColor: "red",
   },
   button: {
     color: "#000",
@@ -126,6 +129,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderColor: "#A6A6A6",
     borderWidth: 2,
+    marginTop: 3,
   },
 });
 
