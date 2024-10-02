@@ -6,7 +6,6 @@ import {
   Dimensions,
   ScrollView,
 } from "react-native";
-import { useSQLiteContext } from "expo-sqlite";
 import { useState, useEffect } from "react";
 
 import styles from "../styles/styles";
@@ -18,9 +17,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import NoteForm from "./NoteForm";
 import NoteItem from "./NoteItem";
 
-const Content = ({ dateToday, setStatusColor, db }) => {
-  // const db = useSQLiteContext();
-
+const Content = ({ dateToday, setStatusColor, db, setPendingTaskCount }) => {
   const [notes, setNotes] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [note, setNote] = useState({});
@@ -151,6 +148,10 @@ const Content = ({ dateToday, setStatusColor, db }) => {
     }
   };
 
+  const countPending = () => {
+    setPendingTaskCount(cTasks.length);
+  };
+
   const handleAdd = () => {
     setTask("");
     setDateString("");
@@ -161,11 +162,18 @@ const Content = ({ dateToday, setStatusColor, db }) => {
   useEffect(() => {
     // deleteAllNotes();
     getNotes();
+
+    // scheduleNotification();
+    // Notifications.cancelAllScheduledNotificationsAsync();
   }, []);
 
   useEffect(() => {
     categorizeNotes();
   }, [notes]);
+
+  useEffect(() => {
+    countPending();
+  }, [cTasks]);
 
   // useEffect(() => {}, [cTasks, oTasks, tTasks]);
 

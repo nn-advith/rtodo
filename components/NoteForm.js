@@ -8,7 +8,6 @@ import {
   TextInput,
   Pressable,
   Dimensions,
-  Touchable,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AntDesign from "@expo/vector-icons/AntDesign";
