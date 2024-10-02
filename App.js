@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
 import * as SQLite from "expo-sqlite";
+import * as SplashScreen from "expo-splash-screen";
 import { useState, useEffect } from "react";
 
 import styles from "./styles/styles";
@@ -8,6 +9,25 @@ import styles from "./styles/styles";
 import Content from "./components/Content";
 
 import { toLocalISOString } from "./common/utils";
+
+SplashScreen.preventAutoHideAsync();
+
+// async function initializeDB(db) {
+//   // const db = await openDatabaseAsync("notes.db");
+//   try {
+//     await db.execAsync(`
+//         PRAGMA journal_mode = WAL;
+//         CREATE TABLE IF NOT EXISTS notes (
+//           id INTEGER PRIMARY KEY AUTOINCREMENT,
+//           note TEXT,
+//           due TEXT
+//         );
+//       `);
+//     console.log("Database initialised");
+//   } catch (error) {
+//     console.log("Error initialising DB", error);
+//   }
+// }
 
 function openDatabase() {
   const db = SQLite.openDatabaseSync("notes.db");
@@ -25,28 +45,13 @@ function openDatabase() {
 
 const db = openDatabase();
 
-async function initializeDB(db) {
-  // const db = await openDatabaseAsync("notes.db");
-  try {
-    await db.execAsync(`
-        PRAGMA journal_mode = WAL;
-        CREATE TABLE IF NOT EXISTS notes (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          note TEXT,
-          due TEXT
-        );
-      `);
-    console.log("Database initialised");
-  } catch (error) {
-    console.log("Error initialising DB", error);
-  }
-}
-
 export default function App() {
   const [dateToday, setDateToday] = useState("");
   const [dayToday, setDayToday] = useState("");
   const [dd, setDD] = useState("01");
   const [mm, setMM] = useState("01");
+  const [appReady, setAppReady] = useState(false);
+  // const [db, setDB] = useState(null);
 
   const [statusColor, setStatusColor] = useState("#0a0a0a");
 
@@ -62,7 +67,15 @@ export default function App() {
     setDD(date.getDate());
     setMM(date.getMonth() + 1);
     setDayToday(date.toLocaleDateString("en-US", { weekday: "long" }));
+
+    setAppReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!appReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [appReady]);
 
   return (
     // <SQLite.SQLiteProvider
