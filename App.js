@@ -10,7 +10,18 @@ import Content from "./components/Content";
 
 import { toLocalISOString } from "./common/utils";
 
+import * as Notifications from "expo-notifications";
+import NotificationToggle from "./components/NotificationToggle";
+
 SplashScreen.preventAutoHideAsync();
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 // async function initializeDB(db) {
 //   // const db = await openDatabaseAsync("notes.db");
@@ -51,13 +62,27 @@ export default function App() {
   const [dd, setDD] = useState("01");
   const [mm, setMM] = useState("01");
   const [appReady, setAppReady] = useState(false);
-  // const [db, setDB] = useState(null);
+  const [pendingTaskCount, setPendingTaskCount] = useState(0);
 
   const [statusColor, setStatusColor] = useState("#0a0a0a");
 
-  // check if directory is
+  const checkAndRequestPermissions = async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+
+    if (status !== "granted") {
+      const { status: newStatus } =
+        await Notifications.requestPermissionsAsync();
+      if (newStatus !== "granted") {
+        alert("You need to enable notifications in your settings."); // change to some sort toast
+      }
+    }
+  };
 
   useEffect(() => {
+    const waitForPermissionCheck = async () => {
+      await checkAndRequestPermissions();
+    };
+
     const date = new Date();
 
     setDateToday(
@@ -67,12 +92,15 @@ export default function App() {
     setDD(date.getDate());
     setMM(date.getMonth() + 1);
     setDayToday(date.toLocaleDateString("en-US", { weekday: "long" }));
-
-    setAppReady(true);
+    waitForPermissionCheck()
+      .then(() => setAppReady(true))
+      .catch((error) => {
+        console.log("Some error", error);
+      });
   }, []);
 
   useEffect(() => {
-    if (!appReady) {
+    if (appReady == true) {
       SplashScreen.hideAsync();
     }
   }, [appReady]);
@@ -89,19 +117,23 @@ export default function App() {
         // colors={["#0a0a0a", "#0a0a0a", "#0a0a0a00"]}
         // locations={[0.7, 0.8, 1]}
         style={styles.banner}
-        pointerEvents="none"
+        // pointerEvents="none"
       >
-        <Text style={styles.text2}>
-          {dd}
-          <Text style={{ color: "#ff3333" }}>/</Text>
-          {mm}
-        </Text>
-        <Text style={styles.text1}>{dayToday}</Text>
+        <View style={styles.bannerDate}>
+          <Text style={styles.text2}>
+            {dd}
+            <Text style={{ color: "#ff3333" }}>/</Text>
+            {mm}
+          </Text>
+          <Text style={styles.text1}>{dayToday}</Text>
+        </View>
+        <NotificationToggle pendingTaskCount={pendingTaskCount} />
       </View>
       <Content
         style={styles.content}
         dateToday={dateToday}
         setStatusColor={setStatusColor}
+        setPendingTaskCount={setPendingTaskCount}
         db={db}
       />
       <StatusBar style="light" />
