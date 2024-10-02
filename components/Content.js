@@ -30,6 +30,15 @@ const Content = ({ dateToday, setStatusColor, db }) => {
   const [tTasks, setTTasks] = useState([]);
   const [oTasks, setOTasks] = useState([]);
 
+  const [task, setTask] = useState("");
+  const [dateString, setDateString] = useState("");
+  const [date, setDate] = useState(
+    new Date(dateToday.split("-").reverse().join("-"))
+  );
+
+  const [formMode, setFormMode] = useState(0);
+  const [noteId, setNoteId] = useState(null);
+
   const getNotes = () => {
     try {
       db.withTransactionSync(() => {
@@ -63,7 +72,7 @@ const Content = ({ dateToday, setStatusColor, db }) => {
       );
     } catch (error) {
       console.log("Error categorizing notes", error);
-      setStatusColor("#0808ff"); //blue
+      // setStatusColor("#0808ff"); //blue
     }
   };
 
@@ -79,8 +88,23 @@ const Content = ({ dateToday, setStatusColor, db }) => {
       getNotes();
     } catch (error) {
       console.log("Error while adding note : ", error);
-      setError(Error);
-      setStatusColor("#e908ff"); //blue
+      // setError(Error);
+      // setStatusColor("#e908ff"); //blue
+    }
+  };
+
+  const updateNote = (note) => {
+    try {
+      db.withTransactionSync(() => {
+        db.runSync(`UPDATE notes SET note = ?, due = ? WHERE id = ?`, [
+          note.note,
+          note.due,
+          note.id,
+        ]);
+      });
+      getNotes();
+    } catch (error) {
+      console.log("Error while updating note: ", error);
     }
   };
 
@@ -128,6 +152,9 @@ const Content = ({ dateToday, setStatusColor, db }) => {
   };
 
   const handleAdd = () => {
+    setTask("");
+    setDateString("");
+    setDate(new Date(dateToday.split("-").reverse().join("-")));
     setShowForm(!showForm);
   };
 
@@ -142,9 +169,7 @@ const Content = ({ dateToday, setStatusColor, db }) => {
 
   // useEffect(() => {}, [cTasks, oTasks, tTasks]);
 
-  useEffect(() => {
-    console.log(note);
-  }, [note]);
+  useEffect(() => {}, [note]);
 
   return (
     <View
@@ -189,6 +214,12 @@ const Content = ({ dateToday, setStatusColor, db }) => {
                     handleDelete={handleDelete}
                     type="c"
                     setNote={setNote}
+                    setShowForm={setShowForm}
+                    setDateString={setDateString}
+                    setTask={setTask}
+                    setDate={setDate}
+                    setNoteId={setNoteId}
+                    setFormMode={setFormMode}
                   />
                 )}
                 keyExtractor={(item) => item.id.toString()}
@@ -220,6 +251,12 @@ const Content = ({ dateToday, setStatusColor, db }) => {
                     handleDelete={handleDelete}
                     type="t"
                     setNote={setNote}
+                    setShowForm={setShowForm}
+                    setDateString={setDateString}
+                    setTask={setTask}
+                    setDate={setDate}
+                    setNoteId={setNoteId}
+                    setFormMode={setFormMode}
                   />
                 )}
                 keyExtractor={(item) => item.id.toString()}
@@ -251,6 +288,12 @@ const Content = ({ dateToday, setStatusColor, db }) => {
                     handleDelete={handleDelete}
                     type="o"
                     setNote={setNote}
+                    setShowForm={setShowForm}
+                    setDateString={setDateString}
+                    setTask={setTask}
+                    setDate={setDate}
+                    setNoteId={setNoteId}
+                    setFormMode={setFormMode}
                   />
                 )}
                 keyExtractor={(item) => item.id.toString()}
@@ -281,14 +324,8 @@ const Content = ({ dateToday, setStatusColor, db }) => {
           alignItems: "flex-end",
           zIndex: 100,
           justifyContent: "center",
-          // backgroundColor: "#d078ff",
-          // position: "absolute",
-          // bottom: 0,
-          // right: 0,
           width: Dimensions.get("window").width,
         }}
-        // colors={["#0a0a0a00", "#0a0a0a", "#0a0a0a"]}
-        // locations={[0.02, 0.3, 1]}
       >
         <TouchableOpacity
           onPress={handleAdd}
@@ -300,12 +337,17 @@ const Content = ({ dateToday, setStatusColor, db }) => {
       </View>
       {showForm && (
         <NoteForm
-          dateToday={dateToday}
+          task={task}
+          setTask={setTask}
+          dateString={dateString}
+          setDateString={setDateString}
           showForm={showForm}
           setShowForm={setShowForm}
-          note={note}
-          setNote={setNote}
+          date={date}
           addNote={addNote}
+          updateNote={updateNote}
+          formMode={formMode}
+          noteId={noteId}
         />
       )}
     </View>

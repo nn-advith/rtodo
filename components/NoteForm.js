@@ -8,6 +8,7 @@ import {
   TextInput,
   Pressable,
   Dimensions,
+  Touchable,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -15,18 +16,23 @@ import moment from "moment";
 import { toLocalISOString } from "../common/utils";
 
 const NoteForm = ({
-  dateToday,
+  task,
+  setTask,
+  date,
+  dateString,
+  setDateString,
   showForm,
   setShowForm,
-  note,
-  setNote,
   addNote,
+  noteId,
+  formMode,
+  updateNote,
 }) => {
-  const [task, setTask] = useState("");
-  const [date, setDate] = useState(
-    new Date(dateToday.split("-").reverse().join("-"))
-  );
-  const [dateString, setDateString] = useState("");
+  // const [task, setTask] = useState("");
+  // const [date, setDate] = useState(
+  //   new Date(dateToday.split("-").reverse().join("-"))
+  // );
+  // const [dateString, setDateString] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
 
   const [taskEmpty, setTaskEmpty] = useState(false);
@@ -53,9 +59,17 @@ const NoteForm = ({
     } else {
       setTaskEmpty(false);
     }
-    temp_note = { note: task, due: dateString };
+    if (formMode == 0) {
+      temp_note = { note: task, due: dateString };
+    } else {
+      temp_note = { id: noteId, note: task, due: dateString };
+    }
     if (validDate(dateString) === true && task.length !== 0) {
-      addNote(temp_note);
+      if (formMode == 0) {
+        addNote(temp_note);
+      } else {
+        updateNote(temp_note);
+      }
 
       setShowForm(!showForm);
     } else {
@@ -71,7 +85,6 @@ const NoteForm = ({
   };
 
   const onChange = (e, d) => {
-    console.log(e);
     if (e.type === "set") {
       setDateString(
         toLocalISOString(d).split("T")[0].split("-").reverse().join("-")
@@ -91,9 +104,19 @@ const NoteForm = ({
         setShowForm(!showForm);
       }}
     >
-      <View style={styles.form}>
-        <View style={styles.formContent}>
-          <Text style={[styles.text3, { paddingLeft: 18 }]}>Add Task</Text>
+      <Pressable
+        style={styles.form}
+        onPress={() => setShowForm(false)}
+        android_ripple={null}
+      >
+        <Pressable
+          style={styles.formContent}
+          onPress={() => {}}
+          android_ripple={null}
+        >
+          <Text style={[styles.text3, { paddingLeft: 18 }]}>
+            {formMode == 0 ? "Add Task" : "Edit Task"}
+          </Text>
           <View
             style={{
               width: Dimensions.get("window").width * 0.9,
@@ -193,8 +216,8 @@ const NoteForm = ({
               <AntDesign name="check" size={36} color="#7a7a7a" />
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 };
