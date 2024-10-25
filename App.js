@@ -63,11 +63,13 @@ export default function App() {
   const [mm, setMM] = useState("01");
   const [appReady, setAppReady] = useState(false);
   const [pendingTaskCount, setPendingTaskCount] = useState(0);
+  // const [notificationEnabled, setNotificationEnabled] = useState(false);
 
   const [statusColor, setStatusColor] = useState("#0a0a0a");
 
   const checkAndRequestPermissions = async () => {
     const { status } = await Notifications.getPermissionsAsync();
+    ``;
 
     if (status !== "granted") {
       const { status: newStatus } =
@@ -127,7 +129,11 @@ export default function App() {
           </Text>
           <Text style={styles.text1}>{dayToday}</Text>
         </View>
-        <NotificationToggle pendingTaskCount={pendingTaskCount} />
+        <NotificationToggle
+          pendingTaskCount={pendingTaskCount}
+          // setNotificationEnabled={setNotificationEnabled}
+          // notificationEnabled={notificationEnabled}
+        />
       </View>
       <Content
         style={styles.content}

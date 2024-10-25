@@ -3,7 +3,11 @@ import { TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
 import * as Notifications from "expo-notifications";
 
-const NotificationToggle = ({ pendingTaskCount }) => {
+const NotificationToggle = ({
+  pendingTaskCount,
+  // setNotificationEnabled,
+  // notificationEnabled,
+}) => {
   const getEnabledNotificationCount = async () => {
     await Notifications.getAllScheduledNotificationsAsync()
       .then((notifs) => setNotifNum(notifs.length))
@@ -27,6 +31,8 @@ const NotificationToggle = ({ pendingTaskCount }) => {
     // console.log("Notification scheduled from the child component!", hh, mm);
   };
 
+  const [notificationEnabled, setNotificationEnabled] = useState(false);
+
   const [bgcolor, setBgcolor] = useState("#0a0a0a");
   const [notifNum, setNotifNum] = useState(0);
   const toggle = async () => {
@@ -35,9 +41,12 @@ const NotificationToggle = ({ pendingTaskCount }) => {
         if (notifNum == 0) {
           await scheduleNotification(pendingTaskCount, 9, 0);
           await scheduleNotification(pendingTaskCount, 18, 30);
+          setNotificationEnabled(true);
         } else {
           await Notifications.cancelAllScheduledNotificationsAsync()
-            .then(() => {})
+            .then(() => {
+              setNotificationEnabled(false);
+            })
             .catch((error) => console.log("Error while cancelling ", error));
         }
         await getEnabledNotificationCount();
@@ -46,7 +55,17 @@ const NotificationToggle = ({ pendingTaskCount }) => {
   };
 
   useEffect(() => {
-    // console.log(pendingTaskCount);
+    const modifyNotifications = async () => {
+      if (notificationEnabled == true) {
+        await Notifications.cancelAllScheduledNotificationsAsync()
+          .then(() => {})
+          .catch((error) => console.log("Error while cancelling ", error));
+        await scheduleNotification(pendingTaskCount, 9, 0);
+        await scheduleNotification(pendingTaskCount, 18, 30);
+      }
+    };
+
+    modifyNotifications();
   }, [pendingTaskCount]);
 
   useEffect(() => {
